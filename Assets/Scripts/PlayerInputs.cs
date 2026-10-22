@@ -8,6 +8,8 @@ public class PlayerInputs : MonoBehaviour, InputSystem_Actions.IPlayerActions
     
     public static Vector2 MovementValue { get; private set; }
     public static event Action OnInteractPressed;
+    public static event Action OnRestartPressed;
+    public static event Action OnEscapePressed;
 
     private void Awake()
     {
@@ -36,6 +38,22 @@ public class PlayerInputs : MonoBehaviour, InputSystem_Actions.IPlayerActions
         if (context.started)
         {
             OnInteractPressed?.Invoke();
+        }
+    }
+
+    public void OnRestart(InputAction.CallbackContext context)
+    {
+        if (context.started)
+        {
+            OnRestartPressed?.Invoke();
+        }
+    }
+
+    public void OnEscape(InputAction.CallbackContext context)
+    {
+        if (context.started)
+        {
+            OnEscapePressed?.Invoke();
         }
     }
 }

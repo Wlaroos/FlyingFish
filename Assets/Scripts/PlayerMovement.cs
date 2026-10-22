@@ -9,9 +9,6 @@ public class PlayerMovement : MonoBehaviour
     private Vector2 _currentMovementInput;
     private bool _canMove = true;
 
-    public WaterType? CurrentWaterZone { get; private set; } = null;
-    public FishingHotspot CurrentHotspot { get; private set; } = null;
-
     private void Awake()
     {
         _rb = GetComponent<Rigidbody2D>();
@@ -44,43 +41,6 @@ public class PlayerMovement : MonoBehaviour
         if (!_canMove)
         {
             _rb.linearVelocity = Vector2.zero;
-        }
-    }
-
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.TryGetComponent(out WaterZone waterZone))
-        {
-            CurrentWaterZone = waterZone.WaterType;
-            Debug.Log($"Entered {CurrentWaterZone} water. Press 'E' to fish");
-        }
-
-        if (collision.TryGetComponent(out FishingHotspot hotspot))
-        {
-            CurrentHotspot = hotspot;
-            Debug.Log("Entered a fishing hotspot");
-        }
-    }
-
-    private void OnTriggerExit2D(Collider2D collision)
-    {
-        if (collision.TryGetComponent(out WaterZone waterZone))
-        {
-            if (CurrentWaterZone == waterZone.WaterType)
-            {
-                CurrentWaterZone = null;
-                CurrentHotspot = null;
-                Debug.Log("Left water zone.");
-            }
-        }
-
-        if (collision.TryGetComponent(out FishingHotspot hotspot))
-        {
-            if (CurrentHotspot == hotspot)
-            {
-                CurrentHotspot = null;
-                Debug.Log("Left fishing hotspot.");
-            }
         }
     }
 }

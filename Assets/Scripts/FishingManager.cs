@@ -1,30 +1,59 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
+[RequireComponent(typeof(LineRenderer))]
 public class FishingManager : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private PlayerMovement _playerMovement; 
+    [SerializeField] private PlayerMovement _playerMovement;
+    [SerializeField] private Transform _rodTipTransform;
+    [SerializeField] private FishingBobber _bobberPrefab;
+
+    [Header("Cast Settings")]
+    [SerializeField] private float _maxCastRange = 5f;
+    public float MaxCastRange => _maxCastRange;
+    [SerializeField] private float _castDuration = 0.6f;
+
+    [Header("Range Visualization")]
+    [SerializeField] private bool _showRangeIndicator = true;
+    [SerializeField] private int _rangeSegments = 50;
+    [SerializeField] private Color _rangeColor = new Color(0f, 1f, 1f, 0.4f);
+
+    [Header("Timing & Mechanics")]
     [SerializeField] private float _baseWaitTime = 2.5f;
 
     [Header("All Water Databases")]
     [SerializeField] private List<FishingDatabase> _waterDatabases = new List<FishingDatabase>();
 
     private Dictionary<WaterType, FishingDatabase> _databaseLookup;
+    private FishingBobber _activeBobber;
     private bool _isFishing = false;
+    private LineRenderer _rangeLineRenderer;
 
     private void Awake()
     {
         InitializePlayerReference();
         BuildDatabaseLookup();
+        SetupRangeIndicator();
+    }
+
+    private void Update()
+    {
+        // Keep the range indicator centered on the player
+        if (_showRangeIndicator && _rangeLineRenderer != null && _playerMovement != null)
+        {
+            transform.position = _playerMovement.transform.position;
+            UpdateRangeIndicator();
+        }
     }
 
     private void InitializePlayerReference()
     {
         if (_playerMovement == null)
             _playerMovement = FindFirstObjectByType<PlayerMovement>();
-            
+
         if (_playerMovement == null)
             Debug.LogWarning("FishingManager: No PlayerMovement found in scene.");
     }
@@ -41,6 +70,41 @@ public class FishingManager : MonoBehaviour
         }
     }
 
+    private void SetupRangeIndicator()
+    {
+        if (!_showRangeIndicator) return;
+
+        _rangeLineRenderer = GetComponent<LineRenderer>();
+        _rangeLineRenderer.positionCount = _rangeSegments + 1;
+        _rangeLineRenderer.useWorldSpace = false;
+        _rangeLineRenderer.startWidth = 0.05f;
+        _rangeLineRenderer.endWidth = 0.05f;
+
+        // Assign a basic unlit/default material if none exists
+        if (_rangeLineRenderer.sharedMaterial == null)
+        {
+            _rangeLineRenderer.sharedMaterial = new Material(Shader.Find("Sprites/Default"));
+        }
+        _rangeLineRenderer.startColor = _rangeColor;
+        _rangeLineRenderer.endColor = _rangeColor;
+
+        UpdateRangeIndicator();
+    }
+
+    private void UpdateRangeIndicator()
+    {
+        if (!_showRangeIndicator || _rangeLineRenderer == null) return;
+
+        float angleStep = 360f / _rangeSegments;
+        for (int i = 0; i <= _rangeSegments; i++)
+        {
+            float angle = i * angleStep * Mathf.Deg2Rad;
+            float x = Mathf.Cos(angle) * _maxCastRange;
+            float y = Mathf.Sin(angle) * _maxCastRange;
+            _rangeLineRenderer.SetPosition(i, new Vector3(x, y, 0f));
+        }
+    }
+
     private void OnEnable() => PlayerInputs.OnInteractPressed += OnInteractPerformed;
     private void OnDisable() => PlayerInputs.OnInteractPressed -= OnInteractPerformed;
 
@@ -48,35 +112,112 @@ public class FishingManager : MonoBehaviour
     {
         if (_playerMovement == null || _isFishing) return;
 
-        WaterType? currentWater = _playerMovement.CurrentWaterZone;
-        FishingHotspot currentHotspot = _playerMovement.CurrentHotspot; // or CurrentHotspot property
-
-        if (currentWater.HasValue)
+        Vector3 originPos = _playerMovement.transform.position;
+        
+        if (TryGetTargetCastPosition(originPos, out Vector3 targetPos, out WaterType? targetWater))
         {
-            StartCoroutine(FishRoutine(currentWater.Value, currentHotspot));
+            if (targetWater.HasValue)
+            {
+                StartCoroutine(FishRoutine(targetWater.Value, targetPos));
+            }
+            else
+            {
+                Debug.Log("Cannot fish here! Aim your mouse at a water zone within range.");
+            }
+        }
+        else
+        {
+            Debug.Log("Target is out of casting range!");
         }
     }
 
-    private IEnumerator FishRoutine(WaterType waterZone, FishingHotspot hotspot)
+    private bool TryGetTargetCastPosition(Vector3 originPoint, out Vector3 targetPos, out WaterType? detectedWater)
     {
-        Debug.Log($"Started fishing in {waterZone} water. Please wait...");
+        targetPos = Vector3.zero;
+        detectedWater = null;
+
+        Vector3 mouseScreenPos = Mouse.current != null ? (Vector3)Mouse.current.position.ReadValue() : Input.mousePosition;
+        mouseScreenPos.z = -Camera.main.transform.position.z;
+        Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(mouseScreenPos);
+        mouseWorldPos.z = 0f;
+
+        Vector3 direction = mouseWorldPos - originPoint;
+        float distance = direction.magnitude;
+
+        // Strict range check: returns false if clicked outside max range instead of clamping
+        if (distance > _maxCastRange)
+        {
+            return false;
+        }
+
+        targetPos = mouseWorldPos;
+
+        Collider2D[] hits = Physics2D.OverlapPointAll(targetPos);
+        foreach (var hit in hits)
+        {
+            if (hit.TryGetComponent(out WaterZone waterZone))
+            {
+                detectedWater = waterZone.WaterType;
+                break;
+            }
+        }
+
+        return true;
+    }
+
+    private IEnumerator FishRoutine(WaterType waterZoneType, Vector3 targetPos)
+    {
         _isFishing = true;
-        
         _playerMovement.SetCanMove(false);
 
+        Transform rodTransform = _rodTipTransform != null ? _rodTipTransform : _playerMovement.transform;
+
+        // Instantiate Bobber & Initialize its Line Renderer
+        _activeBobber = Instantiate(_bobberPrefab, rodTransform.position, Quaternion.identity);
+        _activeBobber.InitializeLine(rodTransform);
+
+        // Perform Cast Physics Arc
+        yield return StartCoroutine(_activeBobber.CastToPosition(targetPos, _castDuration));
+
+        // Check for active FishingHotspot where the bobber landed
+        FishingHotspot activeHotspot = GetHotspotAtPosition(targetPos);
+
+        // Waiting Phase
         float waitTime = _baseWaitTime;
-        if (hotspot != null)
-            waitTime *= hotspot.WaitTimeMultiplier;
+        if (activeHotspot != null)
+            waitTime *= activeHotspot.WaitTimeMultiplier;
 
         yield return new WaitForSeconds(waitTime);
 
-        CatchFish(waterZone, hotspot);
+        // Fish Bite Tug Animation
+        yield return StartCoroutine(_activeBobber.TriggerBiteAnimation());
+
+        // Catch Processing & Visual Cleanup
+        ProcessCatch(waterZoneType, activeHotspot);
         
+        if (_activeBobber != null)
+        {
+            Destroy(_activeBobber.gameObject);
+        }
+
         _playerMovement.SetCanMove(true);
         _isFishing = false;
     }
 
-    private void CatchFish(WaterType zoneType, FishingHotspot hotspot)
+    private FishingHotspot GetHotspotAtPosition(Vector2 position)
+    {
+        Collider2D[] hits = Physics2D.OverlapPointAll(position);
+        foreach (var hit in hits)
+        {
+            if (hit.TryGetComponent(out FishingHotspot hotspot))
+            {
+                return hotspot;
+            }
+        }
+        return null;
+    }
+
+    private void ProcessCatch(WaterType zoneType, FishingHotspot hotspot)
     {
         if (!_databaseLookup.TryGetValue(zoneType, out FishingDatabase activeDb))
         {
@@ -84,101 +225,24 @@ public class FishingManager : MonoBehaviour
             return;
         }
 
-        List<FishData> eligibleFish = activeDb.FishList;
-        if (eligibleFish == null || eligibleFish.Count == 0)
-        {
-            Debug.Log("No fish found in this database area");
-            return;
-        }
-
-        // Group by Rarity
-        Dictionary<Rarity, List<FishData>> rarityGroups = new Dictionary<Rarity, List<FishData>>();
-        foreach (var fish in eligibleFish)
-        {
-            if (fish == null) continue;
-            if (!rarityGroups.ContainsKey(fish.rarity))
-                rarityGroups[fish.rarity] = new List<FishData>();
-            
-            rarityGroups[fish.rarity].Add(fish);
-        }
-
-        Rarity chosenRarity = RollRarity(rarityGroups.Keys, activeDb, hotspot);
-
-        if (!rarityGroups.TryGetValue(chosenRarity, out List<FishData> rarityFishList) || rarityFishList.Count == 0)
-        {
-            Debug.Log("No fish available for the rolled rarity!");
-            return;
-        }
-
-        FishData caughtFish = RollFishFromRarity(rarityFishList);
+        FishData caughtFish = FishingDropCalculator.GetRandomCatch(activeDb, hotspot);
         if (caughtFish != null)
         {
             string spotText = hotspot != null ? " (Hotspot Bonus Active!)" : "";
             Debug.Log($"Success! You caught a {caughtFish.rarity} {caughtFish.fishName} from the {zoneType}!{spotText}");
         }
-    }
-
-    private Rarity RollRarity(Dictionary<Rarity, List<FishData>>.KeyCollection availableRarities, FishingDatabase db, FishingHotspot hotspot)
-    {
-        float totalWeight = 0f;
-        Dictionary<Rarity, float> calculatedWeights = new Dictionary<Rarity, float>();
-
-        foreach (var rarity in availableRarities)
+        else
         {
-            float weight = db.GetRarityWeight(rarity);
-            
-            if (hotspot != null && rarity >= Rarity.Rare)
-            {
-                weight *= hotspot.RareDropMultiplier;
-            }
-
-            calculatedWeights[rarity] = weight;
-            totalWeight += weight;
+            Debug.Log("No fish caught.");
         }
-
-        if (totalWeight <= 0f) return Rarity.Common;
-
-        float roll = Random.Range(0f, totalWeight);
-        float currentSum = 0f;
-
-        foreach (var rarity in availableRarities)
-        {
-            currentSum += calculatedWeights[rarity];
-            if (roll <= currentSum) return rarity;
-        }
-
-        return Rarity.Common;
-    }
-
-    private FishData RollFishFromRarity(List<FishData> rarityFishList)
-    {
-        float totalWeight = 0f;
-        foreach (var fish in rarityFishList) 
-        {
-            if (fish != null) totalWeight += fish.dropChance;
-        }
-
-        if (totalWeight <= 0f) return rarityFishList[0];
-
-        float rolledWeight = Random.Range(0f, totalWeight);
-        float currentSum = 0f;
-
-        foreach (var fish in rarityFishList)
-        {
-            if (fish == null) continue;
-            currentSum += fish.dropChance;
-            if (rolledWeight <= currentSum)
-            {
-                return fish;
-            }
-        }
-
-        return rarityFishList[0];
     }
 
     public FishingDatabase GetDatabaseForWaterType(WaterType waterType)
     {
-        if (_waterDatabases == null) return null;
-        return _waterDatabases.Find(db => db != null && db.WaterType == waterType);
+        if (_databaseLookup.TryGetValue(waterType, out FishingDatabase db))
+        {
+            return db;
+        }
+        return null;
     }
 }
