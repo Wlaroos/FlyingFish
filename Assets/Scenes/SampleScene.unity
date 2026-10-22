@@ -3054,10 +3054,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FishingManager
   _playerMovement: {fileID: 1824671566}
   _baseWaitTime: 2.5
-  _fishDatabase:
-  - {fileID: 11400000, guid: 02b0988715b60fe4cb854b3ab66b6f3e, type: 2}
-  - {fileID: 11400000, guid: 8b8cd009871cd604d89b6463b0578a35, type: 2}
-  - {fileID: 11400000, guid: 814a56b48312e7842b3b21f0d91b603f, type: 2}
+  _waterDatabases:
+  - {fileID: 11400000, guid: 73aa337fd9937e641b3e37d788b83dcc, type: 2}
+  - {fileID: 11400000, guid: 70766665c9fb95d41b49c8364257b1a9, type: 2}
+  - {fileID: 11400000, guid: 8dc309f833d275044beb2e9234dc1e8c, type: 2}
 --- !u!4 &1075939776
 Transform:
   m_ObjectHideFlags: 0
