@@ -20,5 +20,5 @@ public class FishData : ScriptableObject
     public WaterType requiredWaterType;
     public Rarity rarity;
     [Range(0f, 100f)] public float dropChance = 50f;
-    [MinMaxRange(20f, 80f)] public Vector2 minMaxWeight;
+    public Vector2 minMaxWeight;
 }

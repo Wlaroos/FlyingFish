@@ -10,6 +10,7 @@ public class FishingManager : MonoBehaviour
     [SerializeField] private PlayerMovement _playerMovement;
     [SerializeField] private Transform _rodTipTransform;
     [SerializeField] private FishingBobber _bobberPrefab;
+    [SerializeField] private CanvasGroup _fishPopupCanvasGroup;
 
     [Header("Cast Settings")]
     [SerializeField] private float _maxCastRange = 5f;
@@ -229,7 +230,8 @@ public class FishingManager : MonoBehaviour
         if (caughtFish != null)
         {
             string spotText = hotspot != null ? " (Hotspot Bonus Active!)" : "";
-            Debug.Log($"Success! You caught a {caughtFish.rarity} {caughtFish.fishName} from the {zoneType}!{spotText}");
+            _fishPopupCanvasGroup.GetComponent<CaughtFishPopup>().InitCatch(caughtFish.fishName, caughtFish.fishImage, caughtFish.rarity, caughtFish.minMaxWeight);
+            _fishPopupCanvasGroup.alpha = 1;
         }
         else
         {

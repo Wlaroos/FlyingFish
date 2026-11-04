@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: Trout
   m_EditorClassIdentifier: Assembly-CSharp::FishData
   fishName: Trout
+  fishImage: {fileID: 0}
   requiredWaterType: 0
   rarity: 0
   dropChance: 33.333332
-  fishImage: {fileID: 0}
+  minMaxWeight: {x: 0.25, y: 8}

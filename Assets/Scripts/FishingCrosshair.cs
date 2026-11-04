@@ -155,10 +155,12 @@ public class FishingCrosshair : MonoBehaviour
                 (0.5f - normalizedPivot.x) * rectTransform.sizeDelta.x,
                 (0.5f - normalizedPivot.y) * rectTransform.sizeDelta.y
             );
+            // Uncomment for color in addition to the sprite change
+            //_crosshairImage.color = targetColor;
         }
         else
         {
-            _crosshairImage.color = targetColor; // Use color tint if no unique sprites assigned
+            _crosshairImage.color = targetColor; // Use color if no unique sprites assigned
             _spritePivotOffset = Vector2.zero;
         }
     }

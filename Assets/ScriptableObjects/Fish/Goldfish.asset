@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: Goldfish
   m_EditorClassIdentifier: Assembly-CSharp::FishData
   fishName: Goldfish
+  fishImage: {fileID: -431535349438291241, guid: 46deb0a5f74c616459dab6b650d84024, type: 3}
   requiredWaterType: 0
   rarity: 2
   dropChance: 100
-  fishImage: {fileID: 0}
+  minMaxWeight: {x: 0.1, y: 10}
