@@ -10,6 +10,7 @@ public class PlayerInputs : MonoBehaviour, InputSystem_Actions.IPlayerActions
     public static event Action OnInteractPressed;
     public static event Action OnRestartPressed;
     public static event Action OnEscapePressed;
+    public static event Action OnTackleBoxPressed;
 
     private void Awake()
     {
@@ -54,6 +55,14 @@ public class PlayerInputs : MonoBehaviour, InputSystem_Actions.IPlayerActions
         if (context.started)
         {
             OnEscapePressed?.Invoke();
+        }
+    }
+
+    public void OnTackleBox(InputAction.CallbackContext context)
+    {
+        if (context.started)
+        {
+            OnTackleBoxPressed?.Invoke();
         }
     }
 }

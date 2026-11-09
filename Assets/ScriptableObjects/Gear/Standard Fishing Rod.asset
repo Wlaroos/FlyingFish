@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 835f662ebcc99b742af8a2d670fe1853, type: 3}
+  m_Name: Standard Fishing Rod
+  m_EditorClassIdentifier: Assembly-CSharp::RodData
+  gearName: Standard Fishing Rod
+  gearIcon: {fileID: 0}
+  gearType: 0
+  description: 
+  castRangeMultiplier: 1
+  lineStrength: 10
