@@ -21,4 +21,9 @@ public class FishData : ScriptableObject
     public Rarity rarity;
     [Range(0f, 100f)] public float dropChance = 50f;
     public Vector2 minMaxWeight;
+
+    private void OnValidate() 
+    {
+        fishName = name;
+    }
 }

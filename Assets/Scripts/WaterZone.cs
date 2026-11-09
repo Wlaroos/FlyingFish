@@ -3,7 +3,8 @@ using UnityEngine;
 public enum WaterType
 {
     Lake,
-    Ice,
+    Ice_Salt,
+    Ice_Fresh,
     Ocean
 }
 

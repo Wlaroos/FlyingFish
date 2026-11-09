@@ -241,10 +241,18 @@ public class FishingManager : MonoBehaviour
 
     public FishingDatabase GetDatabaseForWaterType(WaterType waterType)
     {
+        // Build the lookup if it hasn't initialized yet
+        if (_databaseLookup == null)
+        {
+            BuildDatabaseLookup();
+        }
+
         if (_databaseLookup.TryGetValue(waterType, out FishingDatabase db))
         {
             return db;
         }
+        
+        Debug.LogWarning(waterType + " was not found in the water databases list!");
         return null;
     }
 }

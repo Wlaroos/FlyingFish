@@ -1,54 +1,65 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
+using UnityEngine.Tilemaps;
 
 [RequireComponent(typeof(Image))]
 public class FishingCrosshair : MonoBehaviour
 {
+    public enum CrosshairState
+    {
+        Default,
+        OutOfRange,
+        InRange,
+        HoverSolidIce
+    }
+
     [Header("References")]
     [SerializeField] private FishingManager _fishingManager;
     [SerializeField] private PlayerMovement _playerMovement;
     [SerializeField] private RectTransform _canvasRectTransform;
 
-    [Header("Crosshair Visuals & Sprites")]
+    [Header("Tilemap & Tiles")]
+    [SerializeField] private Tilemap _iceTilemap;
+    [SerializeField] private TileBase _solidIceTile;
+    [SerializeField] private TileBase _iceHoleTile;
+
+    [Header("Ice Hole Rules")]
+    [SerializeField] private bool _preventAdjacentIceHoles = true;
+
+    [Header("Crosshair Visuals (Stays on Mouse)")]
     [SerializeField] private Image _crosshairImage;
-    [SerializeField] private Sprite _defaultSprite;     // Not over water
-    [SerializeField] private Sprite _outOfRangeSprite;  // Over water, but too far
-    [SerializeField] private Sprite _inRangeSprite;     // Valid water & in range
+    [SerializeField] private Sprite _defaultSprite;      // Not over valid target
+    [SerializeField] private Sprite _outOfRangeSprite;   // Over valid target, but too far
+    [SerializeField] private Sprite _inRangeSprite;      // Valid target & in range
+
+    [Header("Tile Overlay Visuals (Appears on Solid Ice in World)")]
+    [SerializeField] private SpriteRenderer _tileHighlightRenderer; // World-space SpriteRenderer
+    [SerializeField] private Sprite _tileOverlaySprite;             // Hover overlay sprite
 
     [Header("Scaling & Alignment")]
-    [SerializeField, Tooltip("Multiplier applied to the sprite's actual pixel size.")]
-    private float _crosshairScale = 1.0f;
-
-    [Header("Optional Colors (If using color tints instead of sprites)")]
-    [SerializeField] private Color _defaultColor = Color.white;
-    [SerializeField] private Color _outOfRangeColor = Color.yellow;
-    [SerializeField] private Color _inRangeColor = Color.green;
+    [SerializeField] private float _crosshairScale = 1.0f;
 
     private Canvas _rootCanvas;
     private Camera _mainCamera;
     private Vector2 _spritePivotOffset;
+    
+    private Vector3Int _currentHoveredCell;
+    private CrosshairState _currentState;
 
     private void Awake()
     {
         _mainCamera = Camera.main;
         _rootCanvas = GetComponentInParent<Canvas>();
-
         Cursor.visible = false;
 
-        if (_crosshairImage == null)
-        {
-            _crosshairImage = GetComponent<Image>();
-        }
+        if (_crosshairImage == null) _crosshairImage = GetComponent<Image>();
+        if (_canvasRectTransform == null && _rootCanvas != null) _canvasRectTransform = _rootCanvas.GetComponent<RectTransform>();
+        if (_fishingManager == null) _fishingManager = FindFirstObjectByType<FishingManager>();
 
-        if (_canvasRectTransform == null && _rootCanvas != null)
+        if (_tileHighlightRenderer != null && _tileOverlaySprite != null)
         {
-            _canvasRectTransform = _rootCanvas.GetComponent<RectTransform>();
-        }
-
-        if (_fishingManager == null)
-        {
-            _fishingManager = FindFirstObjectByType<FishingManager>();
+            _tileHighlightRenderer.sprite = _tileOverlaySprite;
         }
     }
 
@@ -56,15 +67,14 @@ public class FishingCrosshair : MonoBehaviour
     {
         UpdateCrosshairState();
         UpdateCrosshairPosition();
+        HandleInputActions();
     }
 
     private void UpdateCrosshairPosition()
     {
         if (Mouse.current == null) return;
-
         Vector2 mouseScreenPos = Mouse.current.position.ReadValue();
 
-        // Handle different Canvas render modes (Screen Space - Overlay vs Camera)
         if (_rootCanvas.renderMode == RenderMode.ScreenSpaceOverlay || 
            (_rootCanvas.renderMode == RenderMode.ScreenSpaceCamera && _rootCanvas.worldCamera == null))
         {
@@ -73,10 +83,7 @@ public class FishingCrosshair : MonoBehaviour
         else
         {
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                _canvasRectTransform, 
-                mouseScreenPos, 
-                _rootCanvas.worldCamera, 
-                out Vector2 localPoint
+                _canvasRectTransform, mouseScreenPos, _rootCanvas.worldCamera, out Vector2 localPoint
             );
             transform.localPosition = localPoint + _spritePivotOffset;
         }
@@ -84,83 +91,139 @@ public class FishingCrosshair : MonoBehaviour
 
     private void UpdateCrosshairState()
     {
-        if (_fishingManager == null) return;
+        // Hide the tile overlay by default each frame
+        if (_tileHighlightRenderer != null) _tileHighlightRenderer.gameObject.SetActive(false);
 
-        // Get mouse world position
+        // If references are missing, fallback to default state
+        if (_fishingManager == null || _playerMovement == null || _iceTilemap == null)
+        {
+            SetCrosshairVisuals(_defaultSprite);
+            _currentState = CrosshairState.Default;
+            return;
+        }
+
         Vector2 mouseScreenPos = Mouse.current != null ? (Vector2)Mouse.current.position.ReadValue() : Input.mousePosition;
         Vector3 mouseWorldPos = _mainCamera.ScreenToWorldPoint(new Vector3(mouseScreenPos.x, mouseScreenPos.y, -_mainCamera.transform.position.z));
         mouseWorldPos.z = 0f;
 
-        // Get player position from PlayerMovement component
         Vector2 originPos = _playerMovement.transform.position;
-
-        // Check if there is a water zone at the mouse position
-        WaterType? detectedWater = GetWaterAtPosition(mouseWorldPos);
-        bool isOverWater = detectedWater.HasValue;
-
-        if (!isOverWater)
-        {
-            SetStateVisuals(_defaultSprite, _defaultColor);
-            return;
-        }
-
-        // Check distance range
         float distance = Vector2.Distance(originPos, mouseWorldPos);
-        float maxRange = _fishingManager.MaxCastRange;
+        bool isInRange = distance <= _fishingManager.MaxCastRange;
 
-        if (distance > maxRange)
-        {
-            SetStateVisuals(_outOfRangeSprite, _outOfRangeColor);
-        }
-        else
-        {
-            SetStateVisuals(_inRangeSprite, _inRangeColor);
-        }
-    }
+        Vector3Int cellPos = _iceTilemap.WorldToCell(mouseWorldPos);
+        TileBase tile = _iceTilemap.GetTile(cellPos);
 
-    private WaterType? GetWaterAtPosition(Vector2 position)
-    {
-        Collider2D[] hits = Physics2D.OverlapPointAll(position);
-        foreach (var hit in hits)
+        // If hovering over a valid tile (Solid Ice or Ice Hole)
+        if (tile != null)
         {
-            if (hit.TryGetComponent(out WaterZone waterZone))
+            _currentHoveredCell = cellPos;
+
+            if (tile == _solidIceTile)
             {
-                return waterZone.WaterType;
+                bool hasAdjacentHole = _preventAdjacentIceHoles && HasAdjacentIceHole(cellPos);
+
+                if (!isInRange || hasAdjacentHole)
+                {
+                    SetCrosshairVisuals(_outOfRangeSprite);
+                    _currentState = CrosshairState.OutOfRange;
+                }
+                else
+                {
+                    // Show tile overlay only when hovering over solid ice in range and valid
+                    if (_tileHighlightRenderer != null)
+                    {
+                        _tileHighlightRenderer.gameObject.SetActive(true);
+                        _tileHighlightRenderer.transform.position = _iceTilemap.GetCellCenterWorld(cellPos);
+                    }
+
+                    SetCrosshairVisuals(_inRangeSprite);
+                    _currentState = CrosshairState.HoverSolidIce;
+                }
+                return;
+            }
+            else // Existing ice hole or other designated tiles
+            {
+                if (!isInRange) 
+                {
+                    SetCrosshairVisuals(_outOfRangeSprite);
+                    _currentState = CrosshairState.OutOfRange;
+                }
+                else
+                {
+                    SetCrosshairVisuals(_inRangeSprite);
+                    _currentState = CrosshairState.InRange;
+                }
+                return;
             }
         }
-        return null;
+
+        // Default State (Not over any tile / Empty tilemap space)
+        SetCrosshairVisuals(_defaultSprite);
+        _currentState = CrosshairState.Default;
     }
 
-    private void SetStateVisuals(Sprite targetSprite, Color targetColor)
+    private bool HasAdjacentIceHole(Vector3Int centerCell)
+    {
+        Vector3Int[] directions = new Vector3Int[]
+        {
+            Vector3Int.up,
+            Vector3Int.down,
+            Vector3Int.left,
+            Vector3Int.right
+        };
+
+        foreach (var dir in directions)
+        {
+            if (_iceTilemap.GetTile(centerCell + dir) == _iceHoleTile)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void HandleInputActions()
+    {
+        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            // If hovering over solid ice in range, click to break it into an ice hole
+            if (_currentState == CrosshairState.HoverSolidIce && _iceTilemap != null)
+            {
+                if (_preventAdjacentIceHoles && HasAdjacentIceHole(_currentHoveredCell))
+                {
+                    Debug.LogWarning($"Cannot place an ice hole adjacent to another ice hole at cell {_currentHoveredCell}");
+                    return;
+                }
+
+                _iceTilemap.SetTile(_currentHoveredCell, _iceHoleTile);
+                Debug.Log($"Broke solid ice at cell {_currentHoveredCell} into an ice hole");
+            }
+        }
+    }
+
+    private void SetCrosshairVisuals(Sprite targetSprite)
     {
         if (targetSprite != null)
         {
             _crosshairImage.sprite = targetSprite;
-            _crosshairImage.color = Color.white; // Reset tint if using unique sprites
+            _crosshairImage.color = Color.white; 
 
             RectTransform rectTransform = _crosshairImage.rectTransform;
             Vector2 spriteSize = targetSprite.rect.size;
-
-            // Scale relative to actual sprite size and scaled
             rectTransform.sizeDelta = spriteSize * _crosshairScale;
 
-            // Calculate the sprite's custom pivot offset so it aligns correctly with the mouse
             Vector2 normalizedPivot = new Vector2(
                 targetSprite.pivot.x / spriteSize.x,
                 targetSprite.pivot.y / spriteSize.y
             );
 
-            // Offset from UI center (0.5, 0.5) to the sprite's pivot point, factored by size
             _spritePivotOffset = new Vector2(
                 (0.5f - normalizedPivot.x) * rectTransform.sizeDelta.x,
                 (0.5f - normalizedPivot.y) * rectTransform.sizeDelta.y
             );
-            // Uncomment for color in addition to the sprite change
-            //_crosshairImage.color = targetColor;
         }
         else
         {
-            _crosshairImage.color = targetColor; // Use color if no unique sprites assigned
             _spritePivotOffset = Vector2.zero;
         }
     }
