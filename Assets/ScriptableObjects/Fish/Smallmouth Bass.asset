@@ -16,5 +16,5 @@ MonoBehaviour:
   fishImage: {fileID: 0}
   requiredWaterType: 2
   rarity: 1
-  dropChance: 50
+  dropChance: 100
   minMaxWeight: {x: 4, y: 11}
