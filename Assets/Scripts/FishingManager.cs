@@ -123,12 +123,12 @@ public class FishingManager : MonoBehaviour
             }
             else
             {
-                Debug.Log("Cannot fish here! Aim your mouse at a water zone within range.");
+                Debug.Log("Cannot fish here, aim at a water zone within range");
             }
         }
         else
         {
-            Debug.Log("Target is out of casting range!");
+            Debug.Log("Target is out of casting range");
         }
     }
 
