@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 13312, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name: Tile_Ice
+  m_Name: Tile_IceSolid
   m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.Tilemaps.Tile
   m_Sprite: {fileID: -1889576702, guid: b32e78e9ad354f245bd2de9eda7eeaf4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}

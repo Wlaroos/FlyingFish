@@ -20,9 +20,12 @@ public class FishingCrosshair : MonoBehaviour
     [SerializeField] private RectTransform _canvasRectTransform;
 
     [Header("Tilemap & Tiles")]
-    [SerializeField] private Tilemap _iceTilemap;
+    [SerializeField] private Tilemap _tilemap;
     [SerializeField] private TileBase _solidIceTile;
     [SerializeField] private TileBase _iceHoleTile;
+    [SerializeField] private TileBase _iceHole2Tile;
+    [SerializeField] private TileBase _iceHole3Tile;
+    [SerializeField] private IceRefreeze _refreezeManager;
 
     [Header("Ice Hole Rules")]
     [SerializeField] private bool _preventAdjacentIceHoles = true;
@@ -95,7 +98,7 @@ public class FishingCrosshair : MonoBehaviour
         if (_tileHighlightRenderer != null) _tileHighlightRenderer.gameObject.SetActive(false);
 
         // If references are missing, fallback to default state
-        if (_fishingManager == null || _playerMovement == null || _iceTilemap == null)
+        if (_fishingManager == null || _playerMovement == null || _tilemap == null)
         {
             SetCrosshairVisuals(_defaultSprite);
             _currentState = CrosshairState.Default;
@@ -110,8 +113,8 @@ public class FishingCrosshair : MonoBehaviour
         float distance = Vector2.Distance(originPos, mouseWorldPos);
         bool isInRange = distance <= _fishingManager.MaxCastRange;
 
-        Vector3Int cellPos = _iceTilemap.WorldToCell(mouseWorldPos);
-        TileBase tile = _iceTilemap.GetTile(cellPos);
+        Vector3Int cellPos = _tilemap.WorldToCell(mouseWorldPos);
+        TileBase tile = _tilemap.GetTile(cellPos);
 
         // If hovering over a valid tile (Solid Ice or Ice Hole)
         if (tile != null)
@@ -133,7 +136,7 @@ public class FishingCrosshair : MonoBehaviour
                     if (_tileHighlightRenderer != null)
                     {
                         _tileHighlightRenderer.gameObject.SetActive(true);
-                        _tileHighlightRenderer.transform.position = _iceTilemap.GetCellCenterWorld(cellPos);
+                        _tileHighlightRenderer.transform.position = _tilemap.GetCellCenterWorld(cellPos);
                     }
 
                     SetCrosshairVisuals(_inRangeSprite);
@@ -143,23 +146,49 @@ public class FishingCrosshair : MonoBehaviour
             }
             else // Existing ice hole or other designated tiles
             {
-                if (!isInRange) 
+                WaterType? detectedWater = GetWaterAtPosition(mouseWorldPos);
+                bool isOverWater = detectedWater.HasValue;
+
+                if (!isOverWater)
                 {
-                    SetCrosshairVisuals(_outOfRangeSprite);
-                    _currentState = CrosshairState.OutOfRange;
+                    SetCrosshairVisuals(_defaultSprite);
+                    _currentState = CrosshairState.Default;
+                    return;
                 }
                 else
                 {
-                    SetCrosshairVisuals(_inRangeSprite);
-                    _currentState = CrosshairState.InRange;
+                    if (!isInRange)
+                    {
+                        SetCrosshairVisuals(_outOfRangeSprite);
+                        _currentState = CrosshairState.OutOfRange;
+                        return;
+                    }
+                    else
+                    {
+                        SetCrosshairVisuals(_inRangeSprite);
+                        _currentState = CrosshairState.InRange;
+                        return;
+                    }
                 }
-                return;
             }
         }
 
-        // Default State (Not over any tile / Empty tilemap space)
+        //Default State (Not over any tile / Empty tilemap space)
         SetCrosshairVisuals(_defaultSprite);
         _currentState = CrosshairState.Default;
+    }
+
+    private WaterType? GetWaterAtPosition(Vector2 position)
+    {
+        Collider2D[] hits = Physics2D.OverlapPointAll(position);
+        foreach (var hit in hits)
+        {
+            if (hit.TryGetComponent(out WaterZone waterZone))
+            {
+                return waterZone.WaterType;
+            }
+        }
+        return null;
     }
 
     private bool HasAdjacentIceHole(Vector3Int centerCell)
@@ -174,7 +203,7 @@ public class FishingCrosshair : MonoBehaviour
 
         foreach (var dir in directions)
         {
-            if (_iceTilemap.GetTile(centerCell + dir) == _iceHoleTile)
+            if (_tilemap.GetTile(centerCell + dir) == _iceHoleTile || _tilemap.GetTile(centerCell + dir) == _iceHole2Tile || _tilemap.GetTile(centerCell + dir) == _iceHole3Tile)
             {
                 return true;
             }
@@ -187,7 +216,7 @@ public class FishingCrosshair : MonoBehaviour
         if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
         {
             // If hovering over solid ice in range, click to break it into an ice hole
-            if (_currentState == CrosshairState.HoverSolidIce && _iceTilemap != null)
+            if (_currentState == CrosshairState.HoverSolidIce && _tilemap != null)
             {
                 if (_preventAdjacentIceHoles && HasAdjacentIceHole(_currentHoveredCell))
                 {
@@ -195,7 +224,9 @@ public class FishingCrosshair : MonoBehaviour
                     return;
                 }
 
-                _iceTilemap.SetTile(_currentHoveredCell, _iceHoleTile);
+                _tilemap.SetTile(_currentHoveredCell, _iceHoleTile);
+                _refreezeManager.StartRefreezingTile(_currentHoveredCell);
+
                 Debug.Log($"Broke solid ice at cell {_currentHoveredCell} into an ice hole");
             }
         }

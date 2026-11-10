@@ -109,15 +109,28 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Tileset_0
+      name: Wall
       rect:
         serializedVersion: 2
-        x: 0
-        y: 8
+        x: 2
+        y: 17
         width: 8
         height: 8
       alignment: 0
@@ -135,33 +148,11 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Tileset_1
+      name: Grass
       rect:
         serializedVersion: 2
-        x: 8
-        y: 8
-        width: 8
-        height: 8
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: fa928f66180411145aaed981c7e4c1d5
-      internalID: -1758142545
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Tileset_2
-      rect:
-        serializedVersion: 2
-        x: 16
-        y: 8
+        x: 10
+        y: 17
         width: 8
         height: 8
       alignment: 0
@@ -179,11 +170,11 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Tileset_3
+      name: Lake
       rect:
         serializedVersion: 2
-        x: 24
-        y: 8
+        x: 18
+        y: 17
         width: 8
         height: 8
       alignment: 0
@@ -201,15 +192,15 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Tileset_4
+      name: IceSolid
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
+        x: 26
+        y: 9
         width: 8
         height: 8
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -223,15 +214,15 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Tileset_5
+      name: IceHover
       rect:
         serializedVersion: 2
-        x: 8
-        y: 0
+        x: 2
+        y: 1
         width: 8
         height: 8
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -245,15 +236,15 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Tileset_6
+      name: IceHole1
       rect:
         serializedVersion: 2
-        x: 16
-        y: 0
+        x: 2
+        y: 9
         width: 8
         height: 8
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -262,6 +253,50 @@ TextureImporter:
       bones: []
       spriteID: 135593b6a410dc64f80344a405893a50
       internalID: 711304484
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceHole2
+      rect:
+        serializedVersion: 2
+        x: 10
+        y: 9
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3aa6816f91248e744b409dfaefee2573
+      internalID: 898488756
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceHole3
+      rect:
+        serializedVersion: 2
+        x: 18
+        y: 9
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a65db836cec9ba748ba8a1ebbb53ff23
+      internalID: -1860669811
       vertices: []
       indices: 
       edges: []
@@ -282,13 +317,15 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      Tileset_0: 5441223297315994465
-      Tileset_1: -1758142545
-      Tileset_2: -1712385653
-      Tileset_3: 30322857
-      Tileset_4: -1889576702
-      Tileset_5: -21988996
-      Tileset_6: 711304484
+      Air: -1758142545
+      Grass: -1712385653
+      IceHole1: 711304484
+      IceHole2: 898488756
+      IceHole3: -1860669811
+      IceHover: -21988996
+      IceSolid: -1889576702
+      Lake: 30322857
+      Wall: 5441223297315994465
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
