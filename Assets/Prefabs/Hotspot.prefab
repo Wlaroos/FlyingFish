@@ -83,8 +83,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 1
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -2413806693520163455, guid: ebe73ca9363db456bacf42c025bb4847, type: 3}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.8}
+  m_Sprite: {fileID: -2723159444110733872, guid: 08c1684b9d717e146b39160906e8193e, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -141,5 +141,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 007838f2f436a9e44bf49b7b462f2658, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FishingHotspot
-  waitTimeMultiplier: 0.5
-  rareDropMultiplier: 1.5
+  _waitTimeMultiplier: 0.5
+  _rareDropMultiplier: 1.5
+  _initialSprites:
+  - {fileID: -2723159444110733872, guid: 08c1684b9d717e146b39160906e8193e, type: 3}
+  - {fileID: 2659426183544057715, guid: 08c1684b9d717e146b39160906e8193e, type: 3}
+  - {fileID: 460179729999090850, guid: 08c1684b9d717e146b39160906e8193e, type: 3}
+  _loopingSprites:
+  - {fileID: -8305890954319224610, guid: 08c1684b9d717e146b39160906e8193e, type: 3}
+  - {fileID: 8536678852609490710, guid: 08c1684b9d717e146b39160906e8193e, type: 3}
+  - {fileID: -2097767564, guid: 08c1684b9d717e146b39160906e8193e, type: 3}
+  - {fileID: -699502308, guid: 08c1684b9d717e146b39160906e8193e, type: 3}
+  - {fileID: 1957184759, guid: 08c1684b9d717e146b39160906e8193e, type: 3}
+  _timeBetweenFrames: 0.2
