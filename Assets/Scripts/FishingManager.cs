@@ -10,7 +10,7 @@ public class FishingManager : MonoBehaviour
     [SerializeField] private PlayerMovement _playerMovement;
     [SerializeField] private Transform _rodTipTransform;
     [SerializeField] private FishingBobber _bobberPrefab;
-    [SerializeField] private CanvasGroup _fishPopupCanvasGroup;
+    [SerializeField] private CaughtFishPopup _fishPopup;
 
     [Header("Cast Settings")]
     [SerializeField] private float _maxCastRange = 5f;
@@ -32,6 +32,7 @@ public class FishingManager : MonoBehaviour
     private FishingBobber _activeBobber;
     private bool _isFishing = false;
     private LineRenderer _rangeLineRenderer;
+    //private bool _canFish = true;
 
     private void Awake()
     {
@@ -111,7 +112,7 @@ public class FishingManager : MonoBehaviour
 
     private void OnInteractPerformed()
     {
-        if (_playerMovement == null || _isFishing) return;
+        if (_playerMovement == null || _isFishing || !PlayerInputs.Instance.CanFish) return;
 
         Vector3 originPos = _playerMovement.transform.position;
         
@@ -120,6 +121,7 @@ public class FishingManager : MonoBehaviour
             if (targetWater.HasValue)
             {
                 StartCoroutine(FishRoutine(targetWater.Value, targetPos));
+                PlayerInputs.Instance.DisableInputs();
             }
             else
             {
@@ -229,9 +231,10 @@ public class FishingManager : MonoBehaviour
         FishData caughtFish = FishingDropCalculator.GetRandomCatch(activeDb, hotspot);
         if (caughtFish != null)
         {
+            //_canFish = false;
+
             string spotText = hotspot != null ? " (Hotspot Bonus Active!)" : "";
-            _fishPopupCanvasGroup.GetComponent<CaughtFishPopup>().InitCatch(caughtFish.fishName, caughtFish.fishImage, caughtFish.rarity, caughtFish.minMaxWeight);
-            _fishPopupCanvasGroup.alpha = 1;
+            _fishPopup.InitCatch(caughtFish.fishName, caughtFish.fishImage, caughtFish.rarity, caughtFish.minMaxWeight);
         }
         else
         {
@@ -254,5 +257,10 @@ public class FishingManager : MonoBehaviour
         
         Debug.LogWarning(waterType + " was not found in the water databases list!");
         return null;
+    }
+
+    public void EnableFishing()
+    {
+        //_canFish = true;
     }
 }

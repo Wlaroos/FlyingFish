@@ -585,7 +585,7 @@ MonoBehaviour:
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 0
+  m_MatchWidthOrHeight: 1
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
@@ -868,7 +868,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -4937,7 +4937,7 @@ MonoBehaviour:
   _inRangeSprite: {fileID: -1422151607811118223, guid: a43414ec8ddaa6a4e8a6f83081404391, type: 3}
   _tileHighlightRenderer: {fileID: 439515689}
   _tileOverlaySprite: {fileID: -21988996, guid: b32e78e9ad354f245bd2de9eda7eeaf4, type: 3}
-  _crosshairScale: 2
+  _crosshairScale: 3
 --- !u!114 &1031438952
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5009,7 +5009,7 @@ MonoBehaviour:
   _playerMovement: {fileID: 1824671566}
   _rodTipTransform: {fileID: 764013382}
   _bobberPrefab: {fileID: -1405374913851044701, guid: 49aa7b6e52e53f4439edead69c710bd9, type: 3}
-  _fishPopupCanvasGroup: {fileID: 1279189674}
+  _fishPopup: {fileID: 1279189676}
   _maxCastRange: 1.5
   _castDuration: 0.6
   _showRangeIndicator: 1
@@ -5474,10 +5474,6 @@ PrefabInstance:
       propertyPath: m_PixelsPerUnitMultiplier
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 679701052359956747, guid: 7f19203b07bf14b438450b3dbcd745ea, type: 3}
-      propertyPath: m_Alpha
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 776593651806065343, guid: 7f19203b07bf14b438450b3dbcd745ea, type: 3}
       propertyPath: m_RaycastTarget
       value: 0
@@ -5573,6 +5569,50 @@ PrefabInstance:
     - target: {fileID: 1774385495011397264, guid: 7f19203b07bf14b438450b3dbcd745ea, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3001262787602340445, guid: 7f19203b07bf14b438450b3dbcd745ea, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3001262787602340445, guid: 7f19203b07bf14b438450b3dbcd745ea, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3001262787602340445, guid: 7f19203b07bf14b438450b3dbcd745ea, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3001262787602340445, guid: 7f19203b07bf14b438450b3dbcd745ea, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1279189676}
+    - target: {fileID: 3001262787602340445, guid: 7f19203b07bf14b438450b3dbcd745ea, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
+      value: 
+      objectReference: {fileID: 2089506226}
+    - target: {fileID: 3001262787602340445, guid: 7f19203b07bf14b438450b3dbcd745ea, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3001262787602340445, guid: 7f19203b07bf14b438450b3dbcd745ea, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: HidePopup
+      objectReference: {fileID: 0}
+    - target: {fileID: 3001262787602340445, guid: 7f19203b07bf14b438450b3dbcd745ea, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
+      value: EnableInputs
+      objectReference: {fileID: 0}
+    - target: {fileID: 3001262787602340445, guid: 7f19203b07bf14b438450b3dbcd745ea, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: CaughtFishPopup, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 3001262787602340445, guid: 7f19203b07bf14b438450b3dbcd745ea, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
+      value: PlayerInputs, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 3001262787602340445, guid: 7f19203b07bf14b438450b3dbcd745ea, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 3377660457632527867, guid: 7f19203b07bf14b438450b3dbcd745ea, type: 3}
       propertyPath: m_RaycastTarget
@@ -5675,16 +5715,22 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7f19203b07bf14b438450b3dbcd745ea, type: 3}
---- !u!225 &1279189674 stripped
-CanvasGroup:
-  m_CorrespondingSourceObject: {fileID: 679701052359956747, guid: 7f19203b07bf14b438450b3dbcd745ea, type: 3}
-  m_PrefabInstance: {fileID: 1279189673}
-  m_PrefabAsset: {fileID: 0}
 --- !u!224 &1279189675 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1774385495011397264, guid: 7f19203b07bf14b438450b3dbcd745ea, type: 3}
   m_PrefabInstance: {fileID: 1279189673}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1279189676 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2390906333608518793, guid: 7f19203b07bf14b438450b3dbcd745ea, type: 3}
+  m_PrefabInstance: {fileID: 1279189673}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52f2c206f3f13fa478ba0bc2bcadae2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
 --- !u!1 &1315251383
 GameObject:
   m_ObjectHideFlags: 0
@@ -6283,8 +6329,8 @@ CanvasGroup:
   m_GameObject: {fileID: 2024109231}
   m_Enabled: 1
   m_Alpha: 0
-  m_Interactable: 1
-  m_BlocksRaycasts: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0
 --- !u!1 &2089506225
 GameObject:

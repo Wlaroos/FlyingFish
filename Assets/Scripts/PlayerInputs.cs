@@ -11,9 +11,22 @@ public class PlayerInputs : MonoBehaviour, InputSystem_Actions.IPlayerActions
     public static event Action OnRestartPressed;
     public static event Action OnEscapePressed;
     public static event Action OnTackleBoxPressed;
+    private bool _canFish = true;
+    public bool CanFish => _canFish;
+
+    public static PlayerInputs Instance { get; private set; }
 
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+
         InputActions = new InputSystem_Actions();
     }
 
@@ -48,6 +61,8 @@ public class PlayerInputs : MonoBehaviour, InputSystem_Actions.IPlayerActions
         {
             OnRestartPressed?.Invoke();
         }
+
+        EnableInputs();
     }
 
     public void OnEscape(InputAction.CallbackContext context)
@@ -64,5 +79,19 @@ public class PlayerInputs : MonoBehaviour, InputSystem_Actions.IPlayerActions
         {
             OnTackleBoxPressed?.Invoke();
         }
+    }
+
+    public void DisableInputs()
+    {
+        InputActions.Player.Move.Disable();
+        InputActions.Player.TackleBox.Disable();
+        _canFish = false;
+    }
+
+    public void EnableInputs()
+    {
+        InputActions.Player.Move.Enable();
+        InputActions.Player.TackleBox.Enable();
+        _canFish = true;
     }
 }

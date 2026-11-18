@@ -40,20 +40,21 @@ public class TackleBoxUI : MonoBehaviour
     private void Start()
     {
         PopulateTackleBox();
-        
-        _tackleBoxPanelCanvasGroup.alpha = 0f;
-        _tackleBoxPanelCanvasGroup.interactable = false;
+        HideUI();
     }
 
     public void ToggleTackleBox()
     {
         bool isOpening = _tackleBoxPanelCanvasGroup.alpha == 0f;
-        _tackleBoxPanelCanvasGroup.alpha = isOpening ? 1f : 0f;
-        _tackleBoxPanelCanvasGroup.interactable = isOpening;
 
         if (isOpening)
         {
             RefreshUI();
+            ShowUI();
+        }
+        else
+        {
+            HideUI();
         }
     }
 
@@ -122,5 +123,19 @@ public class TackleBoxUI : MonoBehaviour
         {
             Destroy(child.gameObject);
         }
+    }
+
+    private void HideUI()
+    {
+        _tackleBoxPanelCanvasGroup.alpha = 0;
+        _tackleBoxPanelCanvasGroup.interactable = false;
+        _tackleBoxPanelCanvasGroup.blocksRaycasts = false;
+    }
+
+    private void ShowUI()
+    {
+        _tackleBoxPanelCanvasGroup.alpha = 1;
+        _tackleBoxPanelCanvasGroup.interactable = true;
+        _tackleBoxPanelCanvasGroup.blocksRaycasts = true;
     }
 }

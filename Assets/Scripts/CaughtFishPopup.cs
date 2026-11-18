@@ -8,9 +8,13 @@ public class CaughtFishPopup : MonoBehaviour
     [SerializeField] private Image _fishImage;
     [SerializeField] private TextMeshProUGUI _fishRarity;
     [SerializeField] private TextMeshProUGUI _fishWeight;
+
+    private CanvasGroup _cg;
     private void Awake()
     {
-        GetComponent<CanvasGroup>().alpha = 0;
+        _cg = GetComponent<CanvasGroup>();
+
+        HidePopup();
     }
 
     public void InitCatch(string name, Sprite sprite, Rarity rarity, Vector2 weight)
@@ -25,5 +29,20 @@ public class CaughtFishPopup : MonoBehaviour
         float randomWeight = Random.Range(weight.x, weight.y);
         float roundedWeight = (float)System.Math.Round(randomWeight, 2);
         _fishWeight.text = ($"Weight - {roundedWeight}lbs!");
+
+        ShowPopup();
+    }
+
+    public void ShowPopup()
+    {
+        _cg.alpha = 1;
+        _cg.blocksRaycasts = true;
+        _cg.interactable = true;
+    }
+    public void HidePopup()
+    {
+        _cg.alpha = 0;
+        _cg.blocksRaycasts = false;
+        _cg.interactable = false;
     }
 }

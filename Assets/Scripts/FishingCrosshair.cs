@@ -1,7 +1,9 @@
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(Image))]
 public class FishingCrosshair : MonoBehaviour
@@ -97,13 +99,27 @@ public class FishingCrosshair : MonoBehaviour
         // Hide the tile overlay by default each frame
         if (_tileHighlightRenderer != null) _tileHighlightRenderer.gameObject.SetActive(false);
 
+        // Check if the mouse is currently over a UI element using a GraphicRaycaster check
+        if (IsPointerOverUIElement())
+        {
+            SetCrosshairVisuals(_defaultSprite);
+            // Turns the cursor red over UI for testing
+            SetCrosshairColor(Color.red); 
+            _currentState = CrosshairState.Default;
+            return;
+        }
+
         // If references are missing, fallback to default state
         if (_fishingManager == null || _playerMovement == null || _tilemap == null)
         {
             SetCrosshairVisuals(_defaultSprite);
+            SetCrosshairColor(Color.white);
             _currentState = CrosshairState.Default;
             return;
         }
+
+        // Reset color to normal when interacting with the game world properly
+        SetCrosshairColor(Color.white);
 
         Vector2 mouseScreenPos = Mouse.current != null ? (Vector2)Mouse.current.position.ReadValue() : Input.mousePosition;
         Vector3 mouseWorldPos = _mainCamera.ScreenToWorldPoint(new Vector3(mouseScreenPos.x, mouseScreenPos.y, -_mainCamera.transform.position.z));
@@ -173,9 +189,29 @@ public class FishingCrosshair : MonoBehaviour
             }
         }
 
-        //Default State (Not over any tile / Empty tilemap space)
+        // Default State (Not over any tile / Empty tilemap space)
         SetCrosshairVisuals(_defaultSprite);
         _currentState = CrosshairState.Default;
+    }
+
+    // Helper method that uses a Raycast to check for UI elements
+    private bool IsPointerOverUIElement()
+    {
+        // Gather mouse position from either Input System or legacy Input
+        Vector2 mousePos = Mouse.current.position.ReadValue();
+
+        PointerEventData eventData = new PointerEventData(EventSystem.current)
+        {
+            position = mousePos
+        };
+
+        List<RaycastResult> results = new List<RaycastResult>();
+
+        // Raycast using all GraphicRaycasters in the scene
+        EventSystem.current.RaycastAll(eventData, results);
+
+        // Filter out objects that shouldn't block, or just return true if any valid UI graphic is hit
+        return results.Count > 0;
     }
 
     private WaterType? GetWaterAtPosition(Vector2 position)
@@ -237,7 +273,6 @@ public class FishingCrosshair : MonoBehaviour
         if (targetSprite != null)
         {
             _crosshairImage.sprite = targetSprite;
-            _crosshairImage.color = Color.white; 
 
             RectTransform rectTransform = _crosshairImage.rectTransform;
             Vector2 spriteSize = targetSprite.rect.size;
@@ -257,5 +292,10 @@ public class FishingCrosshair : MonoBehaviour
         {
             _spritePivotOffset = Vector2.zero;
         }
+    }
+
+    private void SetCrosshairColor(Color color)
+    {
+        _crosshairImage.color = color;
     }
 }

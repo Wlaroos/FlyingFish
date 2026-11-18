@@ -9,7 +9,7 @@ public class PlayerMovement : MonoBehaviour
     private Animator _anim;
     private SpriteRenderer _sr;
     private Vector2 _currentMovementInput;
-    private bool _canMove = true;
+    //private bool _canMove = true;
 
     private void Awake()
     {
@@ -33,7 +33,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void GetInput()
     {
-        _currentMovementInput = _canMove ? PlayerInputs.MovementValue : Vector2.zero;
+        //_currentMovementInput = _canMove ? PlayerInputs.MovementValue : Vector2.zero;
+        _currentMovementInput = PlayerInputs.MovementValue;
     }
 
     private void Move()
@@ -44,11 +45,11 @@ public class PlayerMovement : MonoBehaviour
 
     public void SetCanMove(bool canMove)
     {
-        _canMove = canMove;
-        if (!_canMove)
-        {
-            _rb.linearVelocity = Vector2.zero;
-        }
+        //_canMove = canMove;
+        //if (!_canMove)
+        //{
+        //    _rb.linearVelocity = Vector2.zero;
+        //}
     }
 
     private void UpdateAnimation()
